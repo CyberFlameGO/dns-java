@@ -16,10 +16,11 @@
 
 package com.spotify.dns;
 
+import org.xbill.DNS.Lookup;
 import org.xbill.DNS.lookup.LookupSession;
 
 /**
- * Library-internal interface used for finding or creating {@link LookupSession} instances.
+ * Library-internal interface used for finding or creating {@link LookupSession} or {@link Lookup} instances.
  */
 interface LookupFactory {
   /**
@@ -27,5 +28,8 @@ interface LookupFactory {
    * @param fqdn the name to do lookups for
    * @return a Lookup instance
    */
-  LookupSession forName(String fqdn);
+  @Deprecated
+  Lookup forName(String fqdn);
+
+  LookupSession sessionForName(String fqdn);
 }

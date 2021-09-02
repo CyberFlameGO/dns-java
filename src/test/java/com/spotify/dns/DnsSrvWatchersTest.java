@@ -78,7 +78,16 @@ public class DnsSrvWatchersTest {
     }
 
     @Override
-    public CompletionStage<List<LookupResult>> resolve(String fqdn) {
+    public List<LookupResult> resolve(String fqdn) {
+      if (this.fqdn.equals(fqdn)) {
+        return List.of(result);
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public CompletionStage<List<LookupResult>> resolveAsync(String fqdn) {
       if (this.fqdn.equals(fqdn)) {
         return CompletableFuture.completedFuture(List.of(result));
       } else {

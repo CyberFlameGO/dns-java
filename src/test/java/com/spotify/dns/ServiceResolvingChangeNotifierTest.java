@@ -62,7 +62,8 @@ public class ServiceResolvingChangeNotifierTest {
 
     LookupResult result1 = result("host", 1234);
     LookupResult result2 = result("host", 4321);
-    when(resolver.resolve(FQDN))
+    when(resolver.resolve(FQDN)).thenReturn(of(result1), of(result1, result2));
+    when(resolver.resolveAsync(FQDN))
         .thenReturn(CompletableFuture.completedFuture(of(result1)), CompletableFuture.completedFuture(of(result1, result2)));
 
     sut.run();
@@ -95,6 +96,8 @@ public class ServiceResolvingChangeNotifierTest {
 
     LookupResult result = result("host", 1234);
     when(resolver.resolve(FQDN))
+            .thenReturn(of(result));
+    when(resolver.resolveAsync(FQDN))
         .thenReturn(CompletableFuture.completedFuture(of(result)));
 
     sut.run();
@@ -119,6 +122,8 @@ public class ServiceResolvingChangeNotifierTest {
     LookupResult result1 = result("host", 1234);
     LookupResult result2 = result("host", 4321);
     when(resolver.resolve(FQDN))
+            .thenReturn(of(result1), of(result1, result2));
+    when(resolver.resolveAsync(FQDN))
         .thenReturn(CompletableFuture.completedFuture(of(result1)), CompletableFuture.completedFuture(of(result1, result2)));
 
     sut.run();
@@ -153,6 +158,8 @@ public class ServiceResolvingChangeNotifierTest {
     LookupResult result1 = result("host", 1234);
     LookupResult result2 = result("host", 4321);
     when(resolver.resolve(FQDN))
+            .thenReturn(of(result1), of(result1, result2));
+    when(resolver.resolveAsync(FQDN))
         .thenReturn(CompletableFuture.completedFuture(of(result1)), CompletableFuture.completedFuture(of(result1, result2)));
 
     sut.run();
@@ -190,6 +197,11 @@ public class ServiceResolvingChangeNotifierTest {
     ChangeNotifier.Listener<String> listener = mock(ChangeNotifier.Listener.class);
 
     when(resolver.resolve(FQDN))
+            .thenReturn(of(
+                    result("host1", 1234),
+                    result("host2", 1234),
+                    result("host3", 1234)));
+    when(resolver.resolveAsync(FQDN))
         .thenReturn(CompletableFuture.completedFuture(of(
             result("host1", 1234),
             result("host2", 1234),
@@ -214,6 +226,8 @@ public class ServiceResolvingChangeNotifierTest {
 
     DnsException exception = new DnsException("something wrong");
     when(resolver.resolve(FQDN))
+            .thenThrow(exception);
+    when(resolver.resolveAsync(FQDN))
         .thenReturn(CompletableFuture.failedFuture(exception));
 
     sut.setListener(listener, false);

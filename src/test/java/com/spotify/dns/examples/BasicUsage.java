@@ -47,7 +47,7 @@ public final class BasicUsage {
       if (line == null || line.isEmpty()) {
         quit = true;
       } else {
-        resolver.resolve(line).whenComplete((nodes, e) -> {
+        resolver.resolveAsync(line).whenComplete((nodes, e) -> {
           if (e == null) {
             for (LookupResult node : nodes) {
               System.out.println(node);

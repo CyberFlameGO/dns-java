@@ -56,7 +56,8 @@ public class DnsSrvResolversIT {
 
   @Test
   public void shouldReturnResultsForValidQuery() throws ExecutionException, InterruptedException {
-    assertThat(resolver.resolve("_spotify-client._tcp.spotify.com").toCompletableFuture().get().isEmpty(), is(false));
+    assertThat(resolver.resolve("_spotify-client._tcp.spotify.com").isEmpty(), is(false));
+    assertThat(resolver.resolveAsync("_spotify-client._tcp.spotify.com").toCompletableFuture().get().isEmpty(), is(false));
   }
 
   @Test
@@ -89,16 +90,26 @@ public class DnsSrvResolversIT {
         .build();
 
     when(reporter.resolveTimer()).thenReturn(timingReporter);
-    resolver.resolve("_spotify-client._tcp.sto.spotify.net").toCompletableFuture().get();
+    resolver.resolveAsync("_spotify-client._tcp.sto.spotify.net").toCompletableFuture().get();
     verify(timingReporter).stop();
     verify(reporter, never()).reportFailure(isA(RuntimeException.class));
     verify(reporter, times(1)).reportEmpty();
   }
 
   @Test
-  public void shouldFailForBadHostNames() throws Exception {
+  public void shouldFailForBadHostNamesAsync() throws Exception {
     try {
-      resolver.resolve("nonexistenthost").toCompletableFuture().get();
+      resolver.resolveAsync("nonexistenthost").toCompletableFuture().get();
+    }
+    catch (DnsException e) {
+      assertThat(e.getMessage(), containsString("host not found"));
+    }
+  }
+
+  @Test
+  public void shouldFailForBadHostNames() {
+    try {
+      resolver.resolve("nonexistenthost");
     }
     catch (DnsException e) {
       assertThat(e.getMessage(), containsString("host not found"));
@@ -112,7 +123,8 @@ public class DnsSrvResolversIT {
         .newBuilder()
         .servers(List.of(server))
         .build();
-    assertThat(resolver.resolve("_spotify-client._tcp.spotify.com").toCompletableFuture().get().isEmpty(), is(false));
+    assertThat(resolver.resolve("_spotify-client._tcp.spotify.com").isEmpty(), is(false));
+    assertThat(resolver.resolveAsync("_spotify-client._tcp.spotify.com").toCompletableFuture().get().isEmpty(), is(false));
   }
 
   @Test

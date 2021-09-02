@@ -74,10 +74,20 @@ public class MeteredDnsSrvResolverTest {
 
   @Test
   public void shouldCountSuccessful() throws Exception {
-    CompletableFuture<List<LookupResult>> completedNotEmpty = CompletableFuture.completedFuture(NOT_EMPTY);
-    when(delegate.resolve(FQDN)).thenReturn(completedNotEmpty);
+    when(delegate.resolve(FQDN)).thenReturn(NOT_EMPTY);
 
-    resolver.resolve(FQDN).toCompletableFuture().get();
+    resolver.resolve(FQDN);
+
+    verify(reporter, never()).reportEmpty();
+    verify(reporter, never()).reportFailure(RUNTIME_EXCEPTION);
+  }
+
+  @Test
+  public void shouldCountSuccessfulAsync() throws Exception {
+    CompletableFuture<List<LookupResult>> completedNotEmpty = CompletableFuture.completedFuture(NOT_EMPTY);
+    when(delegate.resolveAsync(FQDN)).thenReturn(completedNotEmpty);
+
+    resolver.resolveAsync(FQDN).toCompletableFuture().get();
 
     verify(reporter, never()).reportEmpty();
     verify(reporter, never()).reportFailure(RUNTIME_EXCEPTION);
@@ -85,10 +95,20 @@ public class MeteredDnsSrvResolverTest {
 
   @Test
   public void shouldReportEmpty() throws Exception {
-    CompletableFuture<List<LookupResult>> completedEmpty = CompletableFuture.completedFuture(EMPTY);
-    when(delegate.resolve(FQDN)).thenReturn(completedEmpty);
+    when(delegate.resolve(FQDN)).thenReturn(EMPTY);
 
-    resolver.resolve(FQDN).toCompletableFuture().get();
+    resolver.resolve(FQDN);
+
+    verify(reporter).reportEmpty();
+    verify(reporter, never()).reportFailure(RUNTIME_EXCEPTION);
+  }
+
+  @Test
+  public void shouldReportEmptyAsync() throws Exception {
+    CompletableFuture<List<LookupResult>> completedEmpty = CompletableFuture.completedFuture(EMPTY);
+    when(delegate.resolveAsync(FQDN)).thenReturn(completedEmpty);
+
+    resolver.resolveAsync(FQDN).toCompletableFuture().get();
 
     verify(reporter).reportEmpty();
     verify(reporter, never()).reportFailure(RUNTIME_EXCEPTION);
@@ -96,10 +116,25 @@ public class MeteredDnsSrvResolverTest {
 
   @Test
   public void shouldReportRuntimeException() throws Exception {
-    when(delegate.resolve(FQDN)).thenReturn(CompletableFuture.failedFuture((RUNTIME_EXCEPTION)));
+    when(delegate.resolve(FQDN)).thenThrow(RUNTIME_EXCEPTION);
 
     try {
-      resolver.resolve(FQDN).toCompletableFuture().get();
+      resolver.resolve(FQDN);
+      fail("resolve should have thrown exception");
+    } catch(RuntimeException e) {
+      assertEquals(RUNTIME_EXCEPTION, e);
+    }
+
+    verify(reporter, never()).reportEmpty();
+    verify(reporter).reportFailure(RUNTIME_EXCEPTION);
+  }
+
+  @Test
+  public void shouldReportRuntimeExceptionAsync() throws Exception {
+    when(delegate.resolveAsync(FQDN)).thenReturn(CompletableFuture.failedFuture((RUNTIME_EXCEPTION)));
+
+    try {
+      resolver.resolveAsync(FQDN).toCompletableFuture().get();
       fail("resolve should have thrown exception");
     } catch(ExecutionException e) {
       assertEquals(RUNTIME_EXCEPTION, e.getCause());
@@ -111,10 +146,25 @@ public class MeteredDnsSrvResolverTest {
 
   @Test
   public void shouldNotReportError() throws Exception {
-    when(delegate.resolve(FQDN)).thenReturn(CompletableFuture.failedFuture(ERROR));
+    when(delegate.resolve(FQDN)).thenThrow(ERROR);
 
     try {
-      resolver.resolve(FQDN).toCompletableFuture().get();
+      resolver.resolve(FQDN);
+      fail("resolve should have thrown exception");
+    } catch(Error e) {
+      assertEquals(ERROR, e);
+    }
+
+    verify(reporter, never()).reportEmpty();
+    verify(reporter, never()).reportFailure(RUNTIME_EXCEPTION);
+  }
+
+  @Test
+  public void shouldNotReportErrorAsync() throws Exception {
+    when(delegate.resolveAsync(FQDN)).thenReturn(CompletableFuture.failedFuture(ERROR));
+
+    try {
+      resolver.resolveAsync(FQDN).toCompletableFuture().get();
       fail("resolve should have thrown exception");
     } catch(ExecutionException e) {
       assertEquals(ERROR, e.getCause());
