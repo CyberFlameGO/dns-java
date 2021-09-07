@@ -1,5 +1,6 @@
 package com.spotify.dns;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -26,6 +27,7 @@ public class DnsLookupPerformanceTest {
             .build();
 
     @Test
+    @Ignore("Needs network access and is timing dependent")
     public void runTest() throws InterruptedException {
         int numThreads = 3;
         final ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
