@@ -23,6 +23,9 @@ import com.spotify.dns.statistics.DnsReporter;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
+
 import org.xbill.DNS.ExtendedResolver;
 import org.xbill.DNS.Resolver;
 
@@ -46,6 +49,7 @@ public final class DnsSrvResolvers {
     private final long dnsLookupTimeoutMillis;
     private final long retentionDurationMillis;
     private final List<String> servers;
+    private final Executor executor;
 
     private DnsSrvResolverBuilder() {
       this(null,
@@ -53,6 +57,7 @@ public final class DnsSrvResolvers {
            false,
            SECONDS.toMillis(DEFAULT_DNS_TIMEOUT_SECONDS),
            HOURS.toMillis(DEFAULT_RETENTION_DURATION_HOURS),
+           null,
            null);
     }
 
@@ -62,13 +67,15 @@ public final class DnsSrvResolvers {
         boolean cacheLookups,
         long dnsLookupTimeoutMillis,
         long retentionDurationMillis,
-        List<String> servers) {
+        List<String> servers,
+        Executor executor) {
       this.reporter = reporter;
       this.retainData = retainData;
       this.cacheLookups = cacheLookups;
       this.dnsLookupTimeoutMillis = dnsLookupTimeoutMillis;
       this.retentionDurationMillis = retentionDurationMillis;
       this.servers = servers;
+      this.executor = executor;
     }
 
     public DnsSrvResolver build() {
@@ -88,7 +95,8 @@ public final class DnsSrvResolvers {
       final Duration timeoutDuration = Duration.ofMillis(dnsLookupTimeoutMillis);
       resolver.setTimeout(timeoutDuration);
 
-      LookupFactory lookupFactory = new SimpleLookupFactory(resolver);
+      LookupFactory lookupFactory = executor == null ? new SimpleLookupFactory(resolver) :
+              new SimpleLookupFactory(resolver, executor);
 
       DnsSrvResolver result = new XBillDnsSrvResolver(lookupFactory);
 
@@ -105,27 +113,32 @@ public final class DnsSrvResolvers {
 
     public DnsSrvResolverBuilder metered(DnsReporter reporter) {
       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
-                                       retentionDurationMillis, servers);
+                                       retentionDurationMillis, servers, executor);
     }
 
     public DnsSrvResolverBuilder retainingDataOnFailures(boolean retainData) {
       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
-                                       retentionDurationMillis, servers);
+                                       retentionDurationMillis, servers, executor);
     }
 
     public DnsSrvResolverBuilder cachingLookups(boolean cacheLookups) {
       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
-                                       retentionDurationMillis, servers);
+                                       retentionDurationMillis, servers, executor);
     }
 
     public DnsSrvResolverBuilder dnsLookupTimeoutMillis(long dnsLookupTimeoutMillis) {
       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
-                                       retentionDurationMillis, servers);
+                                       retentionDurationMillis, servers, executor);
     }
 
     public DnsSrvResolverBuilder retentionDurationMillis(long retentionDurationMillis) {
       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
-                                       retentionDurationMillis, servers);
+                                       retentionDurationMillis, servers, executor);
+    }
+
+    public DnsSrvResolverBuilder executor(Executor executor) {
+      return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
+              retentionDurationMillis, servers, executor);
     }
 
     /**
@@ -139,7 +152,7 @@ public final class DnsSrvResolvers {
      */
     public DnsSrvResolverBuilder servers(List<String> servers) {
       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
-                                       retentionDurationMillis, servers);
+                                       retentionDurationMillis, servers, executor);
     }
   }
 

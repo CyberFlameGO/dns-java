@@ -23,18 +23,41 @@ import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 import org.xbill.DNS.lookup.LookupSession;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+
 /** A LookupFactory that always returns new instances. */
 public class SimpleLookupFactory implements LookupFactory {
   private final LookupSession session;
   private final Resolver resolver;
 
+  /**
+   * @deprecated
+   * Deprecated to avoid overloading forkjoin common pool.
+   * Use {@link SimpleLookupFactory#SimpleLookupFactory(Executor)} instead.
+   */
+  @Deprecated
   public SimpleLookupFactory() {
     this(Lookup.getDefaultResolver());
   }
 
+  /**
+   * @deprecated
+   * Deprecated to avoid overloading forkjoin common pool.
+   * Use {@link SimpleLookupFactory#SimpleLookupFactory(Resolver, Executor)} instead.
+   */
   public SimpleLookupFactory(Resolver resolver) {
+    this(resolver, ForkJoinPool.commonPool());
+  }
+
+  public SimpleLookupFactory(Executor executor) {
+    this(Lookup.getDefaultResolver(), executor);
+  }
+
+  public SimpleLookupFactory(Resolver resolver, Executor executor) {
     this.resolver = resolver;
-    this.session = LookupSession.builder().resolver(resolver).build();
+    this.session = LookupSession.builder().resolver(resolver).executor(executor).build();
   }
 
   @Override

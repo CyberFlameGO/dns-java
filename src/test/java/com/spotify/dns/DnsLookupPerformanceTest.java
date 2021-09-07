@@ -22,11 +22,11 @@ public class DnsLookupPerformanceTest {
             .cachingLookups(false)
             .retainingDataOnFailures(false)
             .dnsLookupTimeoutMillis(5000)
+            .executor(Executors.newFixedThreadPool(10))
             .build();
 
     @Test
     public void runTest() throws InterruptedException {
-        long startTime = System.nanoTime();
         int numThreads = 3;
         final ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
         List<String> records = List.of(
@@ -63,12 +63,10 @@ public class DnsLookupPerformanceTest {
         executorService.shutdown();
 
         int failureCount = records.size() - successCount.get();
-        long duration = System.nanoTime() - startTime;
 
         System.out.println("Number of threads: " + numThreads);
         System.out.println("Number of records: " + records.size());
         System.out.println("Failed lookups: " + failureCount);
-        System.out.println("Duration ms: " + duration/1000/1000);
 
         assertThat(failureCount, equalTo(0));
     }
