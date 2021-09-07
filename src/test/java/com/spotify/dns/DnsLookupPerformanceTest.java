@@ -1,75 +1,54 @@
 package com.spotify.dns;
 
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.xbill.DNS.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DnsLookupPerformanceTest {
     private static AtomicInteger successCount = new AtomicInteger(0);
 
     private static DnsSrvResolver resolver = DnsSrvResolvers.newBuilder()
             .cachingLookups(false)
-            .retainingDataOnFailures(true)
+            .retainingDataOnFailures(false)
             .dnsLookupTimeoutMillis(5000)
             .build();
 
-    //@Test
-    // TODO: make this test pass
+    @Test
     public void runTest() throws InterruptedException {
-        int numThreads = 50;
-        final ExecutorService smallExecutorService = Executors.newFixedThreadPool(5);
+        long startTime = System.nanoTime();
+        int numThreads = 3;
         final ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-        List<String> records = List.of("one.one.one.one.",
-                "dns.quad9.net.",
-                "dns11.quad9.net.",
-                "lookup1.resolver.lax-noc.com.",
-                "b.resolvers.Level3.net.",
-                "dns1.nextdns.io.",
-                "dns2.nextdns.io.",
-                "resolver.qwest.net.",
-                "dns1.ncol.net.",
-                "ny.ahadns.net.",
-                "dns1.puregig.net.",
-                "primary.dns.bright.net.",
-                "edelta2.DADNS.america.net.",
-                "ns2.frii.com.",
-                "dns3.dejazzd.com.",
-                "ns7.dns.tds.net.",
-                "ns1.ceinetworks.com.",
-                "nsorl.fdn.com.",
-                "dns2.norlight.net.",
-                "safeservedns.com.",
-                "unkname.unk.edu.",
-                "redirect.centurytel.net.",
-                "dns2.nextdns.io.",
-                "Edelta.DADNS.america.net.",
-                "gatekeeper.poly.edu.",
-                "ns1.wavecable.com.",
-                "ns2.wavecable.com.",
-                "nrcns.s3woodstock.ga.atlanta.comcast.net.",
-                "resolver1.opendns.com.",
-                "cns1.Atlanta2.Level3.net.",
-                "redirect.centurytel.net.",
-                "x.ns.gin.ntt.net.",
-                "rec1pubns2.ultradns.net.",
-                "dns2.dejazzd.com.",
-                "c.resolvers.level3.net.",
-                "dnscache2.izoom.net.",
-                "ns2.nyc.pnap.net.",
-                "yardbird.cns.vt.edu.",
-                "cns4.Atlanta2.Level3.net.",
-                "nscache.prserv.net.",
-                "nscache07.us.prserv.net.",
-                "hvdns1.centurylink.net.",
-                "a.resolvers.level3.net.",
-                "ns2.socket.net.",
-                "res1.dns.cogentco.com.",
-                "rdns.dynect.net.");
+        List<String> records = List.of(
+                "_spotify-noop._http.services.gew1.spotify.net.",
+                "_spotify-noop._http.services.guc3.spotify.net.",
+                "_spotify-noop._http.services.gae2.spotify.net.",
+                "_spotify-palindrome._grpc.services.gew1.spotify.net.",
+                "_spotify-concat._grpc.services.gew1.spotify.net.",
+                "_spotify-concat._grpc.services.guc3.spotify.net.",
+                "_spotify-concat._hm.services.gae2.spotify.net.",
+                "_spotify-concat._hm.services.gew1.spotify.net.",
+                "_spotify-concat._hm.services.guc3.spotify.net.",
+                "_spotify-fabric-test._grpc.services.gae2.spotify.net.",
+                "_spotify-fabric-test._grpc.services.gew1.spotify.net.",
+                "_spotify-fabric-test._grpc.services.guc3.spotify.net.",
+                "_spotify-fabric-test._hm.services.gae2.spotify.net.",
+                "_spotify-fabric-test._hm.services.gew1.spotify.net.",
+                "_spotify-fabric-test._hm.services.guc3.spotify.net.",
+                "_spotify-fabric-load-generator._grpc.services.gae2.spotify.net.",
+                "_spotify-fabric-load-generator._grpc.services.gew1.spotify.net.",
+                "_spotify-fabric-load-generator._grpc.services.guc3.spotify.net.",
+                "_spotify-client._tcp.spotify.com");
 
         CountDownLatch done = new CountDownLatch(records.size() * 2);
         records.stream()
@@ -83,17 +62,19 @@ public class DnsLookupPerformanceTest {
         executorService.shutdown();
 
         int failureCount = records.size() - successCount.get();
+        long duration = System.nanoTime() - startTime;
 
         System.out.println("Number of threads: " + numThreads);
         System.out.println("Number of records: " + records.size());
         System.out.println("Failed lookups: " + failureCount);
+        System.out.println("Duration ms: " + duration/1000/1000);
 
         assertThat(failureCount, equalTo(0));
     }
 
     private static void blockCommonPool() {
         try {
-            Thread.sleep(1_000);
+            Thread.sleep(10_000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
