@@ -24,12 +24,21 @@ import org.xbill.DNS.lookup.LookupSession;
  */
 interface LookupFactory {
   /**
-   * Returns a {@link LookupSession} instance capable of doing SRV lookups for the supplied FQDN.
+   * Returns a {@link Lookup} instance capable of doing SRV lookups for the supplied FQDN.
+   * @deprecated
+   * This synchronous method is being deprecated.
+   * Use {@link LookupFactory#sessionForName(String)} instead
+   *
    * @param fqdn the name to do lookups for
    * @return a Lookup instance
    */
   @Deprecated
   Lookup forName(String fqdn);
 
+  /**
+   * Returns a {@link LookupSession} instance capable of doing SRV lookups for the supplied FQDN.
+   * @param fqdn the name to do lookups for
+   * @return a Lookup instance
+   */
   LookupSession sessionForName(String fqdn);
 }

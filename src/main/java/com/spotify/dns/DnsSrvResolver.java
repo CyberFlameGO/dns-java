@@ -26,6 +26,9 @@ public interface DnsSrvResolver {
   /**
    * Does a DNS SRV lookup for the supplied fully qualified domain name, and returns the
    * matching results.
+   * @deprecated
+   * This method is deprecated in favor of the asynchronous version.
+   * Use {@link DnsSrvResolver#resolveAsync(String)} instead
    *
    * @param fqdn a DNS name to query for
    * @return a possibly empty list of matching records
@@ -34,5 +37,13 @@ public interface DnsSrvResolver {
   @Deprecated
   List<LookupResult> resolve(String fqdn);
 
+  /**
+   * Does a DNS SRV lookup for the supplied fully qualified domain name, and returns the
+   * matching results.
+   *
+   * @param fqdn a DNS name to query for
+   * @return a possibly empty list of matching records
+   * @throws DnsException if there was an error doing the DNS lookup
+   */
   CompletionStage<List<LookupResult>> resolveAsync(String fqdn);
 }
