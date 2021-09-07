@@ -33,6 +33,7 @@ public class DnsLookupPerformanceTest {
                 "_spotify-noop._http.services.gew1.spotify.net.",
                 "_spotify-noop._http.services.guc3.spotify.net.",
                 "_spotify-noop._http.services.gae2.spotify.net.",
+                "_spotify-palindrome._grpc.services.gae2.spotify.net.",
                 "_spotify-palindrome._grpc.services.gew1.spotify.net.",
                 "_spotify-concat._grpc.services.gew1.spotify.net.",
                 "_spotify-concat._grpc.services.guc3.spotify.net.",

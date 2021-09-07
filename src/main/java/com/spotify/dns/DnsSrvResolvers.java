@@ -90,10 +90,6 @@ public final class DnsSrvResolvers {
 
       LookupFactory lookupFactory = new SimpleLookupFactory(resolver);
 
-//      if (cacheLookups) {
-//        lookupFactory = new CachingLookupFactory(lookupFactory);
-//      }
-
       DnsSrvResolver result = new XBillDnsSrvResolver(lookupFactory);
 
       if (reporter != null) {
