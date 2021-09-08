@@ -26,7 +26,6 @@ import org.xbill.DNS.Type;
 import org.xbill.DNS.lookup.LookupSession;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 /** A LookupFactory that always returns new instances. */
