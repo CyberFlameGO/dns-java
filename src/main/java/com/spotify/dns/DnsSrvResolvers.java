@@ -95,8 +95,12 @@ public final class DnsSrvResolvers {
       final Duration timeoutDuration = Duration.ofMillis(dnsLookupTimeoutMillis);
       resolver.setTimeout(timeoutDuration);
 
-      LookupFactory lookupFactory = executor == null ? new SimpleLookupFactory(resolver) :
+      LookupFactory lookupFactory = executor == null ? new SimpleLookupFactory(resolver, ForkJoinPool.commonPool()) :
               new SimpleLookupFactory(resolver, executor);
+
+      if (cacheLookups) {
+        lookupFactory = new CachingLookupFactory(lookupFactory);
+      }
 
       DnsSrvResolver result = new XBillDnsSrvResolver(lookupFactory);
 
@@ -121,6 +125,11 @@ public final class DnsSrvResolvers {
                                        retentionDurationMillis, servers, executor);
     }
 
+    /**
+     * @deprecated
+     * CachingLookups will be removed in the future as it doesn't work with `resolveAsync`
+     */
+    @Deprecated
     public DnsSrvResolverBuilder cachingLookups(boolean cacheLookups) {
       return new DnsSrvResolverBuilder(reporter, retainData, cacheLookups, dnsLookupTimeoutMillis,
                                        retentionDurationMillis, servers, executor);
