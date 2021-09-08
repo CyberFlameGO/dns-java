@@ -16,6 +16,8 @@
 
 package com.spotify.dns;
 
+import static java.util.Objects.requireNonNull;
+
 import org.xbill.DNS.DClass;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Resolver;
@@ -56,6 +58,7 @@ public class SimpleLookupFactory implements LookupFactory {
   }
 
   public SimpleLookupFactory(Resolver resolver, Executor executor) {
+    requireNonNull(executor);
     this.resolver = resolver;
     this.session = LookupSession.builder().resolver(resolver).executor(executor).build();
   }
